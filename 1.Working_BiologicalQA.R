@@ -79,8 +79,6 @@ ggplot(dat,aes(x,y,fill=condition)) +
   theme(axis.text.x=element_text(angle=90,size=4),
         axis.title.x=element_blank())
 
-#' **We observe almost no difference in the raw sequencing depth**
-
 #' ## per-gene mean expression
 #' 
 #' _i.e._ the mean raw count of every gene across samples is calculated
@@ -92,8 +90,6 @@ ggplot(data.frame(value=log10(rowMeans(counts))),aes(x=value)) +
   ggtitle("gene mean raw counts distribution") +
   scale_x_continuous(name="mean raw counts (log10)") + 
   theme_bw()
-
-#'**The cumulative gene coverage has an unexpected broad shoulder for lowly expressed genes.**
 
 #' ## Per-sample expression
 
@@ -107,8 +103,6 @@ ggplot(dat,aes(x=values,group=ind,col=condition)) +
   scale_x_continuous(name="per gene raw counts (log10)") + 
   theme_bw()
 
-#' `r emoji("point_right")` **All samples have the same sequencing depth characteristics**
-#' 
 #' * Export raw expression data
 dir.create(here("/Users/mohamedkouhen/Library/CloudStorage/OneDrive-UniversitàdegliStudidelMolise/UNIMOL/RNA sequencing/Data Analysis/pop_6hbs/DESeq2"),showWarnings=FALSE,recursive=TRUE)
 write.csv(counts,file=here("//Users/mohamedkouhen/Library/CloudStorage/OneDrive-UniversitàdegliStudidelMolise/UNIMOL/RNA sequencing/Data Analysis/pop_6hbs/DESeq2/raw-unormalised-gene-expression_data.csv"))
@@ -149,8 +143,6 @@ boxplot(normalizationFactors(dds),
         las=2,log="y", outline=FALSE)
 abline(h=1, col = "Red", lty = 3)
 
-#' `r emoji("point_right")` **There is almost no differences in the libraries' size factors. They are all within +/1 10% of the average library size.**
-
 #' Assess whether there might be a difference in library size linked to a
 #' given metadata
 boxplot(split(normalizationFactors(dds),dds$condition),las=2,
@@ -161,8 +153,6 @@ plot(colMeans(normalizationFactors(dds)),log10(colSums(counts(dds))),
      col=rainbow(n=nlevels(dds$condition))[as.integer(dds$condition)],pch=19)
 legend("bottomright",fill=rainbow(n=nlevels(dds$condition)),
        legend=levels(dds$condition),cex=0.6)
-
-#' `r emoji("point_right")` **The scaling factor appear linearly proportional to the sequencing depth.**
 
 #' ## Variance Stabilising Transformation
 vsd <- varianceStabilizingTransformation(dds, blind=TRUE)
@@ -183,11 +173,7 @@ meanSdPlot(vst[rowSums(vst)>0,])
 #' After VST normalization, the red line is almost horizontal which indicates
 #' no dependency of variance on mean (homoscedastic).
 #' 
-#' `r emoji("point_right")` **We can conclude that the variance stabilization worked adequately**
-#' 
-#' <hr />
-#' &nbsp;
-#' 
+
 #' ## QC on the normalised data
 #' ### PCA
 pc <- prcomp(t(vst))
@@ -208,13 +194,6 @@ nlevel=nlevels(dds$condition)
 horn <- suppressWarnings(parallelPCA(vst))
 elbow <- findElbowPoint(p$variance)
 
-#' We plot the percentage explained by different components and try to empirically assess whether
-#' the observed number of components would be in agreement with our model's assumptions.
-#' 
-#' * the red line represents number of variables in the model  
-#' * the orange line represents number of variable combinations.
-#' * the black dotted, annotate lines represent the optimal number of components 
-#' reported by the horn and elbow methods.
 #' 
 ggplot(tibble(x=1:length(percent),y=cumsum(percent),p=percent),aes(x=x,y=y)) +
   geom_line() + geom_col(aes(x,p)) + scale_y_continuous("variance explained (%)",limits=c(0,100)) +
@@ -227,7 +206,6 @@ ggplot(tibble(x=1:length(percent),y=cumsum(percent),p=percent),aes(x=x,y=y)) +
   geom_label(aes(x = horn$n + 1, y = cumsum(percent)[horn$n],label = 'Horn', vjust = 1)) +
   geom_label(aes(x = elbow + 1, y = cumsum(percent)[elbow],label = 'Elbow', vjust = 1))
 
-#' `r emoji("point_right")` **The first component explains 40% of the data variance. Both metrics, Horn and Elbow suggest that one or two components are those that are informative. Indeed the slope of the curve is fairly linear past PC3 and that would indicate that the remaining PCs only capture sample specific noise. While this is only empirical, the scree plot support having only few variables of importance in the dataset.**
 
 #' ### PCA plot
 pc.dat <- bind_cols(PC1=pc$x[,1],
@@ -253,9 +231,6 @@ biplot(p,
        encircleFill = TRUE,
        legendPosition = 'top', 
        legendLabSize = 16, legendIconSize = 8.0)
-
-
-#' `r emoji("point_right")` ***
 
 
 #PC1 vs PC3
@@ -300,8 +275,6 @@ plotloadings(p,
              caption = 'Top 1% variables',
              drawConnectors = TRUE)
 
-#' `r emoji("point_right")` **The most important genes in every components could be used to assess whether there is such a bias**
-
 #' ### Correlation
 #' This is a plot showing the correlation between the PC and the model variables. 
 #' Note that condition and replicate are categorical variables, not numerical variables. Hence, to achieve a correlation,
@@ -314,8 +287,6 @@ p$metadata$Reffect <- ifelse(as.integer(dds$replicate)==1,3,as.integer(dds$repli
 #' The condition is associated with PC1, and PC7 and 9. 
 suppressWarnings(eigencorplot(p,components=getComponents(p,1:9),metavars=c('Reffect','condition')))
 
-#' `r emoji("point_right")` ****
-
 #' ### Samples Distance
 hpal <- colorRampPalette(c("blue","white","red"))(100)
 
@@ -327,7 +298,6 @@ pheatmap(sampleDistMatrix,
          clustering_distance_cols=sampleDists,
          col=hpal)
 
-#' `r emoji("point_right")` ****
 
 #' ## Sequencing depth
 #' The figures show the number of genes expressed per condition at different expression cutoffs. The scale on the lower plot is the same as on the upper.
@@ -339,8 +309,6 @@ conds <- dds$condition
 dev.null <- rangeSamplesSummary(counts=vst,
                                 conditions=conds,
                                 nrep=3)
-
-#' `r emoji("point_right")` **The concave samples seem to marginally express more genes than the convex ones. The effect is probably not strong enough to be an issue.**
 
 #' ## Heatmap
 #' 
@@ -354,14 +322,10 @@ sels <- rangeFeatureSelect(counts=vst,
                            nrep=3) %>% 
   suppressWarnings()
 
-#' `r emoji("point_right")` **Here a cutoff at 1 would remove most of the genes (75%)**
 vst.cutoff <- 1
-
 nn <- nrow(vst[sels[[vst.cutoff+1]],])
 tn <- nrow(vst)
 pn <- round(nn * 100/ tn, digits=1)
-
-#' `r emoji("warning")` **`r pn`%** (`r nn`) of total `r tn` genes are plotted below:
 
 mat <- t(scale(t(vst[sels[[vst.cutoff+1]],])))
 hm <- pheatmap(mat,
@@ -374,20 +338,12 @@ hm <- pheatmap(mat,
                angle_col = 90,
                legend = FALSE)
 
-#' `r emoji("point_right")` **As seen in the sample distance plot earlier, and as visible here, there may be more than one sample swap. To assess the robustness of the sample clustering, we will perform a bootstrap.**
-
 #' ## Clustering of samples
 #' ```{r echo=FALSE,eval=FALSE}
 #' # Developer: This wouldonly works with the gplots heatmap.2, not the pheatmap
 #' plot(as.hclust(hm$colDendrogram),xlab="",sub="")
 #' ```
 #'
-#' Below we assess the previous dendrogram's reproducibility and plot the clusters with au and bp where:
-#' 
-#' * __au (Approximately Unbiased): computed by multiscale bootstrap resampling__ `r emoji("point_left")` a better approximation
-#' * __bp (Bootstrap Probability): computed by normal bootstrap resampling__
-#' 
-#' `r emoji("warning")`Clusters with AU larger than 95% are highlighted by rectangles, which are strongly supported by data
 #' 
 hm.pvclust <- pvclust(data = t(scale(t(vst[sels[[vst.cutoff+1]],]))),
                       method.hclust = "ward.D2", 
@@ -397,51 +353,3 @@ plot(hm.pvclust, labels = conds)
 pvrect(hm.pvclust)
 
 plot(hm.pvclust, labels = dds$SampleID)
-
-#' `r emoji("point_right")` **Here, A replicate effect is becoming visible. So we probably have one sample swap, CX3 for CV3 compounded by a batch (replicate) effect.**
-
-#' <details><summary>bootstrapping results as a table</summary>
-#' ```{r bootstrapping results as a table}
-#' print(hm.pvclust, digits=3)
-#' ```
-#' </details>
-#' 
-#' ```{tech rep, echo=FALSE, eval=FALSE}
-#' # The block of code is meant to combine tech reps - as it is facultative it is commented out
-#' # First create a new variable in your sample object called BioID that identifies uniquely technical replicates, so one value for all tech rep of the same bio rep
-samples$BioID <- CHANGEME
-#' # Merging technical replicates
-txi$counts <- sapply(split.data.frame(t(txi$counts),samples$BioID),colSums)
-txi$length <- sapply(split.data.frame(t(txi$length),samples$BioID),colMaxs)
-#' # Counts are now in alphabetic order, check and reorder if necessary
-stopifnot(colnames(txi$counts) == samples$BioID)
-samples <- samples[match(colnames(txi$counts),samples$BioID),]
-#' # Recreate the dds
-dds <- DESeqDataSetFromTximport(
-txi=txi,
-colData = samples,
-design = ~ Tissue)
-#'```
-#'
-#' <hr />
-#' &nbsp;
-#' 
-#' # Summary
-#' `r emoji("star")` **The data is of good quality**
-#' 
-#' `r emoji("star")` **The data separates relatively well, but not as expected**
-#' 
-#' `r emoji("star")` **There is likely a sample swap, compounded by a replicate effect**
-#' 
-#' ```{r empty,eval=FALSE,echo=FALSE}
-#' ```
-#'
-#' # Session Info
-#' <details><summary>Session Info</summary>
-#' ```{r session info}
-#' sessionInfo()
-#' ```
-#' </details>
-#'   
-#' &nbsp;
-#' 
